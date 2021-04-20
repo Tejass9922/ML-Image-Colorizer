@@ -23,8 +23,8 @@ def split_image(preprocessed_image):
     #misc.imsave("face2.png", s2)
 
     return (s1,s2)
-def ReadandSplit(picture):
-    image = cv2.imread(picture)
+def ReadandSplit(picture_link):
+    image = cv2.imread(picture_link)
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     half = int(len(image[0])/2)
    
@@ -33,16 +33,49 @@ def ReadandSplit(picture):
 
    
 
-    return (left, right)
+    return img
 
 def convert_to_grayscale(image):
-    grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    return grayscale_image
+    '''
+    for row in range(len(image)):
+        for col in range(len(image)):
+            r = image[row][col][0]
+            gray_image[row][col] = 
+    '''
+    grayscale_image = cv2.imread(image)
+    gray_image = cv2.cvtColor(grayscale_image, cv2.COLOR_BGR2GRAY)
+    for pixel in gray_image:
+        print(pixel)
+    return gray_image
+'''
+image = convert_to_grayscale('training_image.png') 
 
-left, right = ReadandSplit('training_image.png') 
+left.right = ReadandSplit(gray_training_image)
 
 #img = mpimg.imread('training_image2.png')
 right = convert_to_grayscale(right)
-imgplot = plt.imshow(right)
+
+imgplot = plt.imshow(image)
 
 plt.show()
+'''
+image = cv2.imread('training_image.png')
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+print(gray)
+cv2.imshow('Original image',image)
+cv2.imshow('Gray image', gray)
+  
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+'''
+- k - means 5 cluster: 
+    - pick 5 random points
+    - run loop
+
+
+
+
+
+
+'''
