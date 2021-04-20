@@ -7,75 +7,55 @@ import matplotlib.image as mpimg
 from dataclasses import dataclass 
 from scipy import misc
 
-def split_image(preprocessed_image):
-   
-    # Read the image
-    img = misc.imageio.imread(preprocessed_image)
-    height, width = img.shape
+class Image:
+    
+    def __init__(self,source):
+        self.source = str(source)
+        self.colored_image = self.read_colored_image()
+        self.gray_iamge = self.convert_to_grayscale()
+        self.left_c,self.right_c = self.split_image_c()
+        self.left_g,self.right_g = self.split_image_g()
+        
 
-    # Cut the image in half
-    width_cutoff = width // 2
-    s1 = img[:, :width_cutoff]
-    s2 = img[:, width_cutoff:]
 
-    # Save each half
-    #misc.imsave("face1.png", s1)
-    #misc.imsave("face2.png", s2)
+    def read_colored_image(self):
+        return cv2.imread(self.source)
+       # print(self.colored_image)
 
-    return (s1,s2)
-def ReadandSplit(picture_link):
-    image = cv2.imread(picture_link)
-    img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    half = int(len(image[0])/2)
-   
-    left = img[:,:half]
-    right = img[:,half:]
+    def split_image_c(self):
+        
+        half = int(len(self.colored_image[0])/2)
+    
+        self.left_c =  self.colored_image[:,:half]
+        self.right_c = self.colored_image[:,half:]
 
-   
+        return (self.left_c,self.right_c)
 
-    return img
+    def split_image_g(self):
+        
+        half = int(len(self.colored_image[0])/2)
 
-def convert_to_grayscale(image):
-    '''
-    for row in range(len(image)):
-        for col in range(len(image)):
-            r = image[row][col][0]
-            gray_image[row][col] = 
-    '''
-    grayscale_image = cv2.imread(image)
-    gray_image = cv2.cvtColor(grayscale_image, cv2.COLOR_BGR2GRAY)
-    for pixel in gray_image:
-        print(pixel)
-    return gray_image
-'''
-image = convert_to_grayscale('training_image.png') 
+        self.left_g =  self.gray_iamge[:,:half]
+        self.right_g = self.gray_iamge[:,half:]
 
-left.right = ReadandSplit(gray_training_image)
+        return (self.left_g,self.right_g)
 
-#img = mpimg.imread('training_image2.png')
-right = convert_to_grayscale(right)
+    def convert_to_grayscale(self):
+      self.gray_iamge = cv2.cvtColor(self.colored_image, cv2.COLOR_BGR2GRAY)
+      return self.gray_iamge
 
-imgplot = plt.imshow(image)
+src = str('training_image.png')
+img_object = Image(src)
 
-plt.show()
-'''
-image = cv2.imread('training_image.png')
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-print(gray)
-cv2.imshow('Original image',image)
-cv2.imshow('Gray image', gray)
+
+cv2.imshow('Original image',img_object.colored_image)
+
+cv2.imshow('Gray image', img_object.gray_iamge)
+cv2.imshow('Left Colored', img_object.left_c)
+cv2.imshow('Righ Colored', img_object.right_c)
+cv2.imshow('Left Gray', img_object.left_g)
+cv2.imshow('Right Gray', img_object.right_g)
   
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
-'''
-- k - means 5 cluster: 
-    - pick 5 random points
-    - run loop
-
-
-
-
-
-
-'''

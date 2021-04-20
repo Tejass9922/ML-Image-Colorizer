@@ -105,8 +105,6 @@ def k_means(image):
 
 
 
-
-
                 
             
            
