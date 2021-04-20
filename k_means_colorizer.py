@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from dataclasses import dataclass 
 from scipy import misc
-import preprocessor
-import k_means_model
+from preprocessor import *
+from k_means_model import *
 
+training_image = Image('training_image.png')
+representative_colors = k_means(training_image.colored_image)
+print(representative_colors)

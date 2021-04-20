@@ -18,8 +18,10 @@ class Cluster:
     def __eq__(self, value):
        return self.centroid_value
 
+   
+
     def add_data_point(self,point):
-        self.data_points.add(point)
+        self.data_points.append(point)
 
     def normalize_centroid(self):
         old_sum_r = sum([point[0] for point in self.data_points])
@@ -59,11 +61,12 @@ def fetch_closest_cluster(pixel,clusters):
     chosen_cluster = None
     min_diff = 766
     for c in clusters:
+        print("reached")
         r_diff = euclidian(c.centroid_value,pixel[0])
         g_diff = euclidian(c.centroid_value,pixel[1])
         b_diff = euclidian(c.centroid_value,pixel[2])
         total_diff = r_diff + b_diff + g_diff
-        chosen_cluster = c if total_diff < min_diff else min_diff
+        chosen_cluster = c if total_diff < min_diff else chosen_cluster
         min_diff = min(total_diff,min_diff)
 
     return chosen_cluster
@@ -73,9 +76,9 @@ def fetch_closest_cluster(pixel,clusters):
 def k_means(image):
     cluster_values = chose_random_triples()
     
-    clusters = set()
-    for c in clusters:
-        clusters.add(Cluster(c))
+    clusters = []
+    for c in cluster_values:
+        clusters.append(Cluster(c))
 
     threshold = 5
     convergence_counter = 0
@@ -84,9 +87,11 @@ def k_means(image):
         for row in range(len(image)):
             for col in range(len(image[0])):
                 pixel = image[row][col]
+                print(pixel)
                 chosen_cluster = fetch_closest_cluster(pixel,clusters)
+               
                 chosen_cluster.add_data_point(pixel)
-
+                
                 change_in_weight = 0
                 for cluster in clusters:
                     previous_value = cluster.centroid_value
