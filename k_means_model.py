@@ -18,7 +18,8 @@ class Cluster:
     def __eq__(self, value):
        return self.centroid_value
 
-   
+    def __repr__(self):
+        return str(self.centroid_value)
 
     def add_data_point(self,point):
         self.data_points.append(point)
@@ -68,25 +69,26 @@ def chose_random_triples(image):
       
         centroids.append(pixel)
         i += 1
-    print("Starting 5: ")
-    print(centroids)
+    #print("Starting 5: ")
+    #print(centroids)
     return centroids
    
 
 def euclidian(pointA, pointB):
-    return np.linalg.norm(pointA-pointB)
+    return np.linalg.norm(int(pointA)-int(pointB))
 
 def fetch_closest_cluster(pixel,clusters):
     chosen_cluster = None
     min_diff = 766
     for c in clusters:
-       
-        r_diff = euclidian(c.centroid_value,pixel[0])
-        g_diff = euclidian(c.centroid_value,pixel[1])
-        b_diff = euclidian(c.centroid_value,pixel[2])
+        
+        r_diff = euclidian(c.centroid_value[0],pixel[0])
+        g_diff = euclidian(c.centroid_value[1],pixel[1])
+        b_diff = euclidian(c.centroid_value[2],pixel[2])
         total_diff = r_diff + b_diff + g_diff
         chosen_cluster = c if total_diff < min_diff else chosen_cluster
         min_diff = min(total_diff,min_diff)
+       
 
     return chosen_cluster
 
@@ -106,27 +108,36 @@ def k_means(image):
         for row in range(len(image)):
             for col in range(len(image[0])):
                 pixel = image[row][col]
-                print(pixel)
+                #print(pixel)
                 chosen_cluster = fetch_closest_cluster(pixel,clusters)
                
                 chosen_cluster.add_data_point(pixel)
                 
                 change_in_weight = 0
-                for cluster in clusters:
-                    previous_value = cluster.centroid_value
-                    cluster.normalize_centroid()
-                    if previous_value == -1:
-                        continue
-                    cluster.previous_centroid_value = previous_value
-                    if abs(cluster.centroid_value - cluster.previous_centroid_value) < threshold:
-                        change_in_weight += 1
+                
+        for cluster in clusters:
+            #(cluster, cluster.data_points)
+            previous_value = cluster.centroid_value
+            cluster.normalize_centroid()
+            if len(previous_value) != 3:
+                continue
+            cluster.previous_centroid_value = previous_value
+            diff = 0
+            for i in range(3):
+                diff += abs(euclidian(cluster.centroid_value[i], cluster.previous_centroid_value[i]))
+            
+            if diff < threshold:
+                change_in_weight += 1
 
-                if change_in_weight == len(clusters):
-                    convergence_counter += 1
+        if change_in_weight == len(clusters):
+            convergence_counter += 1
 
     return clusters
 
 
+
+
+                
 
 
                 

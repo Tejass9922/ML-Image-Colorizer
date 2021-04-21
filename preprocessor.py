@@ -44,10 +44,10 @@ class Image:
       self.gray_iamge = cv2.cvtColor(self.colored_image, cv2.COLOR_BGR2GRAY)
       return self.gray_iamge
 
-src = str('training_image.png')
+src = str('scenery_training.jpg')
 img_object = Image(src)
 
-
+"""
 cv2.imshow('Original image',img_object.colored_image)
 
 cv2.imshow('Gray image', img_object.gray_iamge)
@@ -59,3 +59,17 @@ cv2.imshow('Right Gray', img_object.right_g)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
+"""
+
+c1 = (33, 71, 45)
+c2 = (88, 157, 161)
+c3 = (99, 111, 87)
+c4 = (191, 176, 156)
+c5 = (232, 232, 224)
+
+repColors = []
+repColors.append(c1)
+repColors.append(c2)
+repColors.append(c3)
+repColors.append(c4)
+repColors.append(c5)
