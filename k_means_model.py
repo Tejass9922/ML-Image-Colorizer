@@ -38,7 +38,8 @@ class Cluster:
         return self.centroid_value
 
 
-def chose_random_triples():
+def chose_random_triples(image):
+    '''
     centroids = set()
     iterator = 0
     while iterator < 5:
@@ -52,7 +53,25 @@ def chose_random_triples():
         iterator += 1
 
     return centroids
-
+    '''
+    centroids = []
+    used_locations = set()
+    i = 0
+    while i < 5:
+        x = random.randint(0,len(image))
+        y = random.randint(0,len(image[0]))
+        pixel = image[x][y]
+        if (x,y) in used_locations:
+            continue
+        used_locations.add((x,y))
+       
+      
+        centroids.append(pixel)
+        i += 1
+    print("Starting 5: ")
+    print(centroids)
+    return centroids
+   
 
 def euclidian(pointA, pointB):
     return np.linalg.norm(pointA-pointB)
@@ -61,7 +80,7 @@ def fetch_closest_cluster(pixel,clusters):
     chosen_cluster = None
     min_diff = 766
     for c in clusters:
-        print("reached")
+       
         r_diff = euclidian(c.centroid_value,pixel[0])
         g_diff = euclidian(c.centroid_value,pixel[1])
         b_diff = euclidian(c.centroid_value,pixel[2])
@@ -74,7 +93,7 @@ def fetch_closest_cluster(pixel,clusters):
 
 
 def k_means(image):
-    cluster_values = chose_random_triples()
+    cluster_values = chose_random_triples(image)
     
     clusters = []
     for c in cluster_values:
