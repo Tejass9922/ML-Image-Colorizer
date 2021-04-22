@@ -1,6 +1,9 @@
+import math
+import sys
 import numpy as np
 import pandas as pa
 from random import randint
+from queue import PriorityQueue
 from cv2 import cv2
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -10,10 +13,11 @@ from preprocessor import *
 from k_means_model import *
 
 class Patch:
-    def __init__(self, row, col, grayscale_value, r_value, g_value, b_value):
+    def __init__(self, row, col, grayscale_value, average_grayscale_value, r_value, g_value, b_value):
         self.row = row
         self.col = col
         self.grayscale_value = grayscale_value
+        self.average_grayscale_value = average_grayscale_value
         self.r_value = r_value
         self.g_value = g_value
         self.b_value = b_value
@@ -28,6 +32,25 @@ def get_neighbor_values(training_image, row, col):
         if x >= 0 and x < len(training_image) and y >= 0 and y < len(training_image[0]):
             neighborValues.append(training_image[x][y])
     return neighborValues
+
+def get_six_similar(arr, x, k, n):
+    six_similar_patches = []
+    pq = PriorityQueue()
+    for i in range(k):
+        pq.put((-abs(arr[i].average_grayscale_value-x),i))
+    for i in range(k,n):
+        diff = abs(arr[i].average_grayscale_value-x)
+        p,pi = pq.get()
+        curr = -p
+        if diff>curr:
+            pq.put((-curr,pi))
+            continue
+        else:
+            pq.put((-diff,i))
+    while(not pq.empty()):
+        p,q = pq.get()
+        six_similar_patches.append(arr[q])
+    return six_similar_patches
 
 def train_model(training_image):
     print("--TRAINING K-MEANS MODEL--")
@@ -62,34 +85,32 @@ def color_left_half(training_image,representative_colors):
     print("\n--FINISHED COLORING LEFT HALF--\n")
     return RecolorLeft
 
-def color_right_half(training_image):
+def color_right_half(training_image, RecolorLeft):
     print("\n--RECOLORING RIGHT HALF--")
-    RecolorRight = training_image.right_g
-    GrayscaleLeft = training_image.left_g
+    recolor_right = training_image.right_g
+    grayscale_left = training_image.left_g
 
-    for row in xrange(0, len(RecolorRight)-1, 1):
-        for col in xrange(0, len(RecolorRight[0])-1, 1):
+    left_patch_data = []
+    for rowG in range(1, len(grayscale_left)-1, 1):
+        for colG in range(1, len(grayscale_left[0])-1, 1):
+            neighbor_values = get_neighbor_values(grayscale_left, rowG, colG)
+            neighbor_values.append(grayscale_left[rowG][colG])
+            average_grayscale_value = mean(neighbor_values)
+            left_patch_data.append(Patch(rowG, colG, None, average_grayscale_value, None, None, None))
 
-            SixSimilarPatches = []
 
-            for rowG in xrange(0, len(GrayscaleLeft)-1, 1):
-                for colG in xrange(0, len(GrayscaleLeft[0])-1, 1):
-
-                    similar_target = RecolorRight[row][col]
-                    NeighborValues = getNeighborValues(GrayscaleLeft, rowG, colG)
-                    NeighborValues.append(GrayscaleLeft[rowG][colG])
-                    AverageGrayscaleValue = mean(NeighborValues)
-                    for i in xrange(0, i<5, 1)
-                        if (len(SixSimilarPatches) < 6 && (abs(SixSimilarPatches[i+1].grayscale_value - similar_target) >= abs(SixSimilarPatches[i].grayscale_value - similar_target))):
-                            break
-                        else
-                            continue
-                    SixSimilarPatches.append(Patch(row, col, AverageGrayscaleValue, none, none, none))
-
-    #START CODING OVER HERE
+    for row in range(1, len(recolor_right)-1, 1):
+        for col in range(1, len(recolor_right[0])-1, 1):
+            six_similar_patches = get_six_similar(left_patch_data, recolor_right[row][col], 6, len(left_patch_data))
+            six_similar_patches[5]
+            six_similar_patches[4]
+            six_similar_patches[3]
+            six_similar_patches[2]
+            six_similar_patches[1]
+            six_similar_patches[0]
 
     print("\n--FINISHED COLORING RIGHT HALF--\n")
-    return RecolorRight
+    return recolor_right
 
 training_image = Image('scenery_training.png')
 cv2.imshow('Left Colored - Old', training_image.left_c)
