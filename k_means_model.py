@@ -132,7 +132,10 @@ def k_means(image):
         if change_in_weight == len(clusters):
             convergence_counter += 1
 
-    return clusters
+    processed_clusters = []
+    for c in clusters:
+        processed_clusters.append(c.centroid_value)
+    return processed_clusters
 
 
 

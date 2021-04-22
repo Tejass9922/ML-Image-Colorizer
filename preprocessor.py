@@ -44,8 +44,8 @@ class Image:
       self.gray_iamge = cv2.cvtColor(self.colored_image, cv2.COLOR_BGR2GRAY)
       return self.gray_iamge
 
-src = str('scenery_training.jpg')
-img_object = Image(src)
+#src = str('scenery_training.jpg')
+#img_object = Image(src)
 
 """
 cv2.imshow('Original image',img_object.colored_image)
