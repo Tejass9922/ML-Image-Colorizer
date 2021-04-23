@@ -43,7 +43,7 @@ def color_left_half(training_image,representative_colors):
     return Recolor
 
 
-training_image = Image('scenery_training.png')
+training_image = Image('training_image.png')
 cv2.imshow('Left Colored - Old', training_image.left_c)
 cv2.waitKey(0)
 representative_colors = train_model(training_image)
