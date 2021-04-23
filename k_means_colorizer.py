@@ -21,6 +21,7 @@ class Patch:
         self.r_value = r_value
         self.g_value = g_value
         self.b_value = b_value
+        self.rgb = (r_value,g_value,b_value)
 
 def get_neighbor_values(training_image, row, col):
     rowIndices = [-1, -1, -1, 0, 0, 1, 1, 1]
@@ -85,32 +86,70 @@ def color_left_half(training_image,representative_colors):
     print("\n--FINISHED COLORING LEFT HALF--\n")
     return RecolorLeft
 
+
+def findMajorityElement(A):
+ 
+    m = (-1,-1,-1)
+    
+    i = 0
+ 
+    for j in range(len(A)):
+      
+        if i == 0:
+            m = A[j]
+            i = 1
+
+        elif m.rgb == A[j].rgb:
+            i = i + 1
+        else:
+            i = i - 1
+ 
+    return m.rgb
 def color_right_half(training_image, RecolorLeft):
     print("\n--RECOLORING RIGHT HALF--")
-    recolor_right = training_image.right_g
+    grayscale_right = training_image.right_g
     grayscale_left = training_image.left_g
-
+    RecolorRight = training_image.right_c
     left_patch_data = []
     for rowG in range(1, len(grayscale_left)-1, 1):
         for colG in range(1, len(grayscale_left[0])-1, 1):
             neighbor_values = get_neighbor_values(grayscale_left, rowG, colG)
             neighbor_values.append(grayscale_left[rowG][colG])
-            average_grayscale_value = mean(neighbor_values)
+            average_grayscale_value = float(float(sum(neighbor_values)) / float(len(neighbor_values)))
             left_patch_data.append(Patch(rowG, colG, None, average_grayscale_value, None, None, None))
 
 
-    for row in range(1, len(recolor_right)-1, 1):
-        for col in range(1, len(recolor_right[0])-1, 1):
-            six_similar_patches = get_six_similar(left_patch_data, recolor_right[row][col], 6, len(left_patch_data))
-            six_similar_patches[5]
-            six_similar_patches[4]
-            six_similar_patches[3]
-            six_similar_patches[2]
-            six_similar_patches[1]
-            six_similar_patches[0]
+    for row in range(1, len(grayscale_right)-1, 1):
+        for col in range(1, len(grayscale_right[0])-1, 1):
+            #Find average of the patch
+           
+            neighbor_values = get_neighbor_values(grayscale_right, row, col)
+            neighbor_values.append(grayscale_left[row][col])
+            average_grayscale_value = float(float(sum(neighbor_values)) / float(len(neighbor_values)))
+            six_similar_patches = get_six_similar(left_patch_data, average_grayscale_value, 6, len(left_patch_data))
+            
+            for patch in six_similar_patches:
+               
+                rep_color = RecolorLeft[patch.row][patch.col]
+                patch.r_value = rep_color[0]
+                patch.g_value = rep_color[1]
+                patch.b_value = rep_color[2]
+                patch.rgb = (patch.r_value,patch.g_value,patch.b_value)
+
+            #Use Boyer-Moore Voting algo to find majority (Might tweak this to make it super majority)
+            
+            majority_color = findMajorityElement(six_similar_patches)
+            if not  majority_color == (-1,-1,-1):
+                RecolorRight[row][col] = majority_color.rgb
+            else:
+                #Assumption: 0th element of six_similar_patches = the most similar of the 6
+                most_similar_patch = six_similar_patches[0]
+                most_similar_patch_location = (most_similar_patch.row,most_similar_patch.col)
+                RecolorRight[row][col] = RecolorLeft[most_similar_patch_location[0]][most_similar_patch_location[1]]
+
 
     print("\n--FINISHED COLORING RIGHT HALF--\n")
-    return recolor_right
+    return RecolorRight
 
 training_image = Image('scenery_training.png')
 cv2.imshow('Left Colored - Old', training_image.left_c)
@@ -124,6 +163,10 @@ representative_colors = train_model(training_image)
 #representative_colors = [(50.06253367689082, 55.07547677539461, 29.799080158022825), (151.63715188952688, 133.68479106819527, 108.21791481071686), (210.91933997171725, 210.22021263344544, 200.62026099253364), (25.178416455599383, 87.07011737492873, 61.44349219299678), (35.477213480856264, 122.63336821860113, 108.12674709383784)]
 
 RecolorLeft = color_left_half(training_image,representative_colors)
-cv2.imshow('Left Colored - New', RecolorLeft)
+#cv2.imshow('Left Colored - New', RecolorLeft)
+RecolorRight = color_right_half(training_image,RecolorLeft)
+RecolorFinal = cv2.hconcat(RecolorLeft,RecolorRight)
+cv2.imshow(training_image.colored_image)
+cv2.imshow(RecolorFinal)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
