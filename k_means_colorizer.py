@@ -35,7 +35,10 @@ def get_neighbor_values(training_image, row, col):
     return neighborValues
 
 def get_six_similar(arr, x, k, n):
+    print("start")  
     six_similar_patches = []
+    
+  
     pq = PriorityQueue()
     for i in range(k):
         pq.put((-abs(arr[i].average_grayscale_value-x),i))
@@ -51,7 +54,46 @@ def get_six_similar(arr, x, k, n):
     while(not pq.empty()):
         p,q = pq.get()
         six_similar_patches.append(arr[q])
+        
+    print("end")
     return six_similar_patches
+
+def binarySearch(arr, x):
+    low = 0
+    high = len(arr) - 1
+ 
+    while low <= high:
+        mid = low + (high - low) // 2
+        if arr[mid].average_grayscale_value < x:
+            low = mid + 1
+        elif arr[mid].average_grayscale_value > x:
+            high = mid - 1
+        else:
+            return mid      # key found
+ 
+    return low              # key not found
+ 
+ 
+
+def findKClosestElements(arr, x, k):
+ 
+   
+    i = binarySearch(arr, x)
+ 
+    left = i - 1
+    right = i
+ 
+  
+    while k > 0:
+        if left < 0 or (right < len(arr) and abs(arr[left].average_grayscale_value - x) > abs(arr[right].average_grayscale_value - x)):
+            right = right + 1
+        else:
+            left = left - 1
+ 
+        k = k - 1
+ 
+    # return `k` closest elements
+    return arr[left+1: right]
 
 def train_model(training_image):
     print("--TRAINING K-MEANS MODEL--")
@@ -104,7 +146,7 @@ def findMajorityElement(A):
         else:
             i = i - 1
  
-    return m.rgb
+    return m
 def color_right_half(training_image, RecolorLeft):
     print("\n--RECOLORING RIGHT HALF--")
     grayscale_right = training_image.right_g
@@ -117,16 +159,16 @@ def color_right_half(training_image, RecolorLeft):
             neighbor_values.append(grayscale_left[rowG][colG])
             average_grayscale_value = float(float(sum(neighbor_values)) / float(len(neighbor_values)))
             left_patch_data.append(Patch(rowG, colG, None, average_grayscale_value, None, None, None))
-
-
+    left_patch_data.sort(key=lambda x: x.average_grayscale_value, reverse=True)
+    print("--COMPLETED AVERAGING LEFT GRAYSCALE--")
     for row in range(1, len(grayscale_right)-1, 1):
         for col in range(1, len(grayscale_right[0])-1, 1):
             #Find average of the patch
-           
+            print((row,col))
             neighbor_values = get_neighbor_values(grayscale_right, row, col)
             neighbor_values.append(grayscale_left[row][col])
             average_grayscale_value = float(float(sum(neighbor_values)) / float(len(neighbor_values)))
-            six_similar_patches = get_six_similar(left_patch_data, average_grayscale_value, 6, len(left_patch_data))
+            six_similar_patches = findKClosestElements(left_patch_data, average_grayscale_value, 6)
             
             for patch in six_similar_patches:
                
@@ -139,6 +181,7 @@ def color_right_half(training_image, RecolorLeft):
             #Use Boyer-Moore Voting algo to find majority (Might tweak this to make it super majority)
             
             majority_color = findMajorityElement(six_similar_patches)
+            #print("M_color %d"-majority_color)
             if not  majority_color == (-1,-1,-1):
                 RecolorRight[row][col] = majority_color.rgb
             else:
@@ -146,27 +189,34 @@ def color_right_half(training_image, RecolorLeft):
                 most_similar_patch = six_similar_patches[0]
                 most_similar_patch_location = (most_similar_patch.row,most_similar_patch.col)
                 RecolorRight[row][col] = RecolorLeft[most_similar_patch_location[0]][most_similar_patch_location[1]]
-
-
+            
+            
     print("\n--FINISHED COLORING RIGHT HALF--\n")
     return RecolorRight
 
 training_image = Image('training_image.png')
 cv2.imshow('Left Colored - Old', training_image.left_c)
+cv2.imshow('Right Colored - Old',training_image.right_c)
 cv2.waitKey(0)
-representative_colors = train_model(training_image)
+#representative_colors = train_model(training_image)
 
 # Sample Colors for training_image.png
-#representative_colors = [(7.235440566268001, 4.158799121308275, 9.24460824993898), (73.20919616968587, 42.89522142305408, 13.874427956480055), (31.297164913342918, 18.522225081359267, 7.051370619844093), (194.67783309425366, 144.16915590808088, 155.61758501392288), (144.34301092067267, 98.40030035629513, 98.54573126174841)]
+representative_colors = [(7.235440566268001, 4.158799121308275, 9.24460824993898), (73.20919616968587, 42.89522142305408, 13.874427956480055), (31.297164913342918, 18.522225081359267, 7.051370619844093), (194.67783309425366, 144.16915590808088, 155.61758501392288), (144.34301092067267, 98.40030035629513, 98.54573126174841)]
 
 #Sample Colors for scenery_image.png
 #representative_colors = [(50.06253367689082, 55.07547677539461, 29.799080158022825), (151.63715188952688, 133.68479106819527, 108.21791481071686), (210.91933997171725, 210.22021263344544, 200.62026099253364), (25.178416455599383, 87.07011737492873, 61.44349219299678), (35.477213480856264, 122.63336821860113, 108.12674709383784)]
 
-RecolorLeft = color_left_half(training_image,representative_colors)
-#cv2.imshow('Left Colored - New', RecolorLeft)
+#RecolorLeft = color_left_half(training_image,representative_colors)
+#cv2.imwrite('Recolored_training_left.png',RecolorLeft)
+RecolorLeft = cv2.imread('Recolored_training_left.png')
+cv2.imshow('Left Colored - New', RecolorLeft)
+cv2.waitKey(0)
+
 RecolorRight = color_right_half(training_image,RecolorLeft)
-RecolorFinal = cv2.hconcat(RecolorLeft,RecolorRight)
-cv2.imshow(training_image.colored_image)
-cv2.imshow(RecolorFinal)
+#RecolorFinal = cv2.vconcat(RecolorLeft,RecolorRight)
+#cv2.imshow(training_image.colored_image)
+
+cv2.imshow('Right Colored - New',RecolorRight)
+#cv2.imshow('Final Colored - New',RecolorFinal)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
