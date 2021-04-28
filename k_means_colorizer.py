@@ -23,6 +23,24 @@ class Patch:
         self.b_value = b_value
         self.rgb = (r_value,g_value,b_value)
 
+    def __eq__(self, other):
+        for i in range(3):
+            for j in range(3):
+                pixel_1 = self.patch_data[i][j]
+                pixel_2 = other.patch_data[i][j]
+                if not pixel_1 == pixel_2:
+                    return False
+
+        return True
+
+    def euclidian(self,other):
+        a = self.patch_data
+        b = other.patch_data
+        dist = np.linalg.norm(a-b)
+        return(dist)
+
+
+
 def get_neighbor_values(training_image, row, col):
     rowIndices = [-1, -1, -1, 0, 0, 1, 1, 1]
     colIndices = [-1, 0, 1, -1, 1, -1, 0, 1]
@@ -153,6 +171,8 @@ def color_right_half(training_image, RecolorLeft):
     grayscale_left = training_image.left_g
     RecolorRight = training_image.right_c
     left_patch_data = []
+    cv2.imshow('gray right', grayscale_right)
+    cv2.waitKey(0)
     for rowG in range(1, len(grayscale_left)-1, 1):
         for colG in range(1, len(grayscale_left[0])-1, 1):
             neighbor_values = get_neighbor_values(grayscale_left, rowG, colG)
@@ -164,9 +184,10 @@ def color_right_half(training_image, RecolorLeft):
     for row in range(1, len(grayscale_right)-1, 1):
         for col in range(1, len(grayscale_right[0])-1, 1):
             #Find average of the patch
-            print((row,col))
+            #print((row,col))
             neighbor_values = get_neighbor_values(grayscale_right, row, col)
-            neighbor_values.append(grayscale_left[row][col])
+            neighbor_values.append(grayscale_right[row][col])
+            patch = Patch(row,col,None,neighbor_values,None,None,None)
             average_grayscale_value = float(float(sum(neighbor_values)) / float(len(neighbor_values)))
             six_similar_patches = findKClosestElements(left_patch_data, average_grayscale_value, 6)
             
@@ -186,7 +207,7 @@ def color_right_half(training_image, RecolorLeft):
                 RecolorRight[row][col] = majority_color.rgb
             else:
                 #Assumption: 0th element of six_similar_patches = the most similar of the 6
-                most_similar_patch = six_similar_patches[0]
+                most_similar_patch = findKClosestElements(six_similar_patches,average_grayscale_value,1)[0]
                 most_similar_patch_location = (most_similar_patch.row,most_similar_patch.col)
                 RecolorRight[row][col] = RecolorLeft[most_similar_patch_location[0]][most_similar_patch_location[1]]
             
