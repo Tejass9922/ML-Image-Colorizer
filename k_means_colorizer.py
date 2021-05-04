@@ -2,6 +2,7 @@ import math
 import sys
 import numpy as np
 import pandas as pa
+import random
 from random import randint
 from queue import PriorityQueue
 from cv2 import cv2
@@ -12,12 +13,13 @@ from scipy import misc
 from preprocessor import *
 from k_means_model import *
 
+
 class Patch:
-    def __init__(self, row, col, grayscale_value, average_grayscale_value, r_value, g_value, b_value):
+    def __init__(self, row, col, grayscale_value, patch, r_value, g_value, b_value):
         self.row = row
         self.col = col
-        self.grayscale_value = grayscale_value
-        self.average_grayscale_value = average_grayscale_value
+        self.patch = patch
+        self.patch = patch
         self.r_value = r_value
         self.g_value = g_value
         self.b_value = b_value
@@ -34,14 +36,17 @@ class Patch:
         return True
 
     def euclidian(self,other):
-        a = self.patch_data
-        b = other.patch_data
+        a = self.patch
+        b = other.patch
         dist = np.linalg.norm(a-b)
         return(dist)
 
 
+def euclidian2(pointA, pointB):
+    return np.linalg.norm((pointA)-(pointB))
 
 def get_neighbor_values(training_image, row, col):
+    """
     rowIndices = [-1, -1, -1, 0, 0, 1, 1, 1]
     colIndices = [-1, 0, 1, -1, 1, -1, 0, 1]
     neighborValues  = []
@@ -49,8 +54,10 @@ def get_neighbor_values(training_image, row, col):
         x = rowIndices[i] + row
         y = colIndices[i]  + col
         if x >= 0 and x < len(training_image) and y >= 0 and y < len(training_image[0]):
-            neighborValues.append(training_image[x][y])
-    return neighborValues
+            neighborValues.append(training_image[x][y]
+    """
+    #patches.append((img[i-1:i+2,j-1:j+2],(i,j)))
+    return training_image[row-1:row+2,col-1:col+2]
 
 def get_six_similar(arr, x, k, n):
     print("start")  
@@ -174,23 +181,82 @@ def color_right_half(training_image, RecolorLeft):
     cv2.imshow('gray right', grayscale_right)
     cv2.waitKey(0)
     for rowG in range(1, len(grayscale_left)-1, 1):
+        print(rowG, "gray patch generation")
         for colG in range(1, len(grayscale_left[0])-1, 1):
             neighbor_values = get_neighbor_values(grayscale_left, rowG, colG)
-            neighbor_values.append(grayscale_left[rowG][colG])
-            average_grayscale_value = float(float(sum(neighbor_values)) / float(len(neighbor_values)))
-            left_patch_data.append(Patch(rowG, colG, None, average_grayscale_value, None, None, None))
-    left_patch_data.sort(key=lambda x: x.average_grayscale_value, reverse=True)
+            #neighbor_values.append(grayscale_left[rowG][colG])
+            #average_grayscale_value = float(float(sum(neighbor_values)) / float(len(neighbor_values)))
+            left_patch_data.append(Patch(rowG, colG, None, neighbor_values, None, None, None))
+        
+    #left_patch_data.sort(key=lambda x: x.average_grayscale_value, reverse=True)
     print("--COMPLETED AVERAGING LEFT GRAYSCALE--")
     for row in range(1, len(grayscale_right)-1, 1):
+        print(row)
         for col in range(1, len(grayscale_right[0])-1, 1):
             #Find average of the patch
-            #print((row,col))
-            neighbor_values = get_neighbor_values(grayscale_right, row, col)
-            neighbor_values.append(grayscale_right[row][col])
-            patch = Patch(row,col,None,neighbor_values,None,None,None)
-            average_grayscale_value = float(float(sum(neighbor_values)) / float(len(neighbor_values)))
-            six_similar_patches = findKClosestElements(left_patch_data, average_grayscale_value, 6)
             
+            neighbor_values = get_neighbor_values(grayscale_right, row, col)
+            #neighbor_values.append(grayscale_right[row][col])
+            gray_patch = Patch(row,col,None,neighbor_values,None,None,None)
+
+            min1,min2,min3,min4,min5,min6=1000,1000,1000,1000,1000,1000
+            sixPatches=[[],[], [], [], [], []]
+
+            samples = random.sample(list(left_patch_data), 1000)
+            
+            for k in samples:
+                
+                dist=euclidian2(k.patch,gray_patch.patch)
+                if dist<min1:
+                    min1=dist
+                    sixPatches[1]=sixPatches[0]
+                    sixPatches[0]=k
+                    continue
+                if dist<min2:
+                    min2=dist
+                    sixPatches[2]=sixPatches[1]
+                    sixPatches[1]=k
+                    continue
+                if dist<min3:
+                    min3=dist
+                    sixPatches[3]=sixPatches[2]
+                    sixPatches[2]=k
+                    continue
+                if dist<min4:
+                    min4=dist
+                    sixPatches[4]=sixPatches[3]
+                    sixPatches[3]=k
+                    continue
+                if dist<min5:
+                    min5=dist
+                    sixPatches[5]=sixPatches[4]
+                    sixPatches[4]=k
+                    continue
+                if dist<min6:
+                    min6=dist
+                    sixPatches[5]=k
+                    continue
+
+                #get color of 6 middel pixels
+            for l in range(0,len(sixPatches)):
+                x=sixPatches[l].row
+                y=sixPatches[l].col
+
+                sixPatches[l] = RecolorLeft[x][y]
+
+            try:
+                mostFrequent=mode(sixPatches)
+                RecolorRight[row][col] = mostFrequent
+               
+            except:
+                x=random.randint(0,len(sixPatches)-1)
+                tie=sixPatches[x]
+                RecolorRight[row][col] = tie
+
+
+            #average_grayscale_value = float(float(sum(neighbor_values)) / float(len(neighbor_values)))
+            #six_similar_patches = findKClosestElements(left_patch_data, average_grayscale_value, 6)
+            """
             for patch in six_similar_patches:
                
                 rep_color = RecolorLeft[patch.row][patch.col]
@@ -210,7 +276,7 @@ def color_right_half(training_image, RecolorLeft):
                 most_similar_patch = findKClosestElements(six_similar_patches,average_grayscale_value,1)[0]
                 most_similar_patch_location = (most_similar_patch.row,most_similar_patch.col)
                 RecolorRight[row][col] = RecolorLeft[most_similar_patch_location[0]][most_similar_patch_location[1]]
-            
+            """
             
     print("\n--FINISHED COLORING RIGHT HALF--\n")
     return RecolorRight
@@ -227,9 +293,9 @@ representative_colors = [(7.235440566268001, 4.158799121308275, 9.24460824993898
 #Sample Colors for scenery_image.png
 #representative_colors = [(50.06253367689082, 55.07547677539461, 29.799080158022825), (151.63715188952688, 133.68479106819527, 108.21791481071686), (210.91933997171725, 210.22021263344544, 200.62026099253364), (25.178416455599383, 87.07011737492873, 61.44349219299678), (35.477213480856264, 122.63336821860113, 108.12674709383784)]
 
-#RecolorLeft = color_left_half(training_image,representative_colors)
+RecolorLeft = color_left_half(training_image,representative_colors)
 #cv2.imwrite('Recolored_training_left.png',RecolorLeft)
-RecolorLeft = cv2.imread('Recolored_training_left.png')
+#RecolorLeft = cv2.imread('Recolored_training_left.png')
 cv2.imshow('Left Colored - New', RecolorLeft)
 cv2.waitKey(0)
 
