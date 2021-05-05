@@ -281,6 +281,8 @@ def color_right_half(training_image, RecolorLeft):
     print("\n--FINISHED COLORING RIGHT HALF--\n")
     return RecolorRight
 
+
+
 training_image = Image('training_image.png')
 cv2.imshow('Left Colored - Old', training_image.left_c)
 cv2.imshow('Right Colored - Old',training_image.right_c)
@@ -307,6 +309,6 @@ cv2.imshow('Right Colored - New',RecolorRight)
 #cv2.imshow('Final Colored - New',RecolorFinal)
 recolor_final = cv2.hconcat([RecolorLeft, RecolorRight])
 #cv2.imwrite('completed_k_means_colorizer.png',recolor_final)
-cv2.imwrite*('Recolored_Right_k_means.png',RecolorRight)
+#cv2.imwrite('Recolored_Right_k_means.png',RecolorRight)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
