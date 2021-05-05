@@ -305,5 +305,7 @@ RecolorRight = color_right_half(training_image,RecolorLeft)
 
 cv2.imshow('Right Colored - New',RecolorRight)
 #cv2.imshow('Final Colored - New',RecolorFinal)
+recolor_final = cv2.hconcat([RecolorLeft, RecolorRight])
+cv2.imwrite('completed_k_means_colorizer.png',recolor_final)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
