@@ -73,5 +73,6 @@ repColors.append(c2)
 repColors.append(c3)
 repColors.append(c4)
 repColors.append(c5)
-
+left_original = Image('training_image.png').left_c
+cv2.imwrite('Left_original.png',left_original)
 #cv2.hconcat()
