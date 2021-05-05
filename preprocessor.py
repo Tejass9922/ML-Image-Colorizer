@@ -73,6 +73,10 @@ repColors.append(c2)
 repColors.append(c3)
 repColors.append(c4)
 repColors.append(c5)
-left_original = Image('training_image.png').left_c
-cv2.imwrite('Left_original.png',left_original)
+#left_original = Image('training_image.png').left_c
+#cv2.imwrite('Left_original.png',left_original)
+neural_network_right_half = Image('completed_nerual_network.png')
+cv2.imshow('right-colored',neural_network_right_half.right_c)
+cv2.imwrite('Recolored_Right_Neural_Network.png',neural_network_right_half.right_c)
+#cv2.imwrite('completed_neural_network_right_half.png',neural_network_right_half)
 #cv2.hconcat()
