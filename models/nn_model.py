@@ -8,12 +8,12 @@ from scipy import signal
 import cv2
 
 
-#  Given a value x, it fetches the sigmoid value at that point
+#Returns sigmoid value at x
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
-# Given a value x, it fetches the derivative of the sigmoid function at that point
-def d_sigmoid(x):
+#returns derivative of sigmoid function at x
+def sigmoid_derivative(x):
     return x * (1 - x)
 
 def fetch_neighbors_create_patch(gray_image,r,c):
@@ -82,15 +82,15 @@ def train_network(training_images):
                 #Error Checking within the weights and Back propogation activated after error calculation 
                 
                 error = current_pixel - output_result
-                error_output_derivative = error * d_sigmoid(output_result)
+                error_output_derivative = error * sigmoid_derivative(output_result) 
 
                 output_transpose = output_weights.T 
                 layer2_error = output_transpose.dot(error_output_derivative)
-                error_layer2_derivative = layer2_error * d_sigmoid(layer2_result)
+                error_layer2_derivative = layer2_error * sigmoid_derivative(layer2_result)
                 
                 layer2_transpose = layer2_weights.T 
                 layer1_error = layer2_transpose.dot(error_layer2_derivative)
-                error_layer1_derivative = layer1_error * d_sigmoid(layer1_result)
+                error_layer1_derivative = layer1_error * sigmoid_derivative(layer1_result)
 
                 
                 #Update the weights of each layer according to the error calculation

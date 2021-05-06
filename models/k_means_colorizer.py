@@ -12,6 +12,9 @@ from dataclasses import dataclass
 from scipy import misc
 from preprocessor import *
 from k_means_model import *
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 
 
 class Patch:
@@ -199,84 +202,35 @@ def color_right_half(training_image, RecolorLeft):
             #neighbor_values.append(grayscale_right[row][col])
             gray_patch = Patch(row,col,None,neighbor_values,None,None,None)
 
-            min1,min2,min3,min4,min5,min6=1000,1000,1000,1000,1000,1000
-            sixPatches=[[],[], [], [], [], []]
-
-            samples = random.sample(list(left_patch_data), 1000)
+           
+            bestPatches=[[],[], [], [], [], []]
             
-            for k in samples:
-                
-                dist=euclidian2(k.patch,gray_patch.patch)
-                if dist<min1:
-                    min1=dist
-                    sixPatches[1]=sixPatches[0]
-                    sixPatches[0]=k
-                    continue
-                if dist<min2:
-                    min2=dist
-                    sixPatches[2]=sixPatches[1]
-                    sixPatches[1]=k
-                    continue
-                if dist<min3:
-                    min3=dist
-                    sixPatches[3]=sixPatches[2]
-                    sixPatches[2]=k
-                    continue
-                if dist<min4:
-                    min4=dist
-                    sixPatches[4]=sixPatches[3]
-                    sixPatches[3]=k
-                    continue
-                if dist<min5:
-                    min5=dist
-                    sixPatches[5]=sixPatches[4]
-                    sixPatches[4]=k
-                    continue
-                if dist<min6:
-                    min6=dist
-                    sixPatches[5]=k
-                    continue
+            samples = random.sample(list(left_patch_data), 1000)
+            samples = sorted(samples, key=lambda x : euclidian2(x.patch,gray_patch.patch))
 
-                #get color of 6 middel pixels
-            for l in range(0,len(sixPatches)):
-                x=sixPatches[l].row
-                y=sixPatches[l].col
+            bestPatches[0] = samples[0]
+            bestPatches[1] = samples[1]
+            bestPatches[2] = samples[2]
+            bestPatches[3] = samples[3]
+            bestPatches[4] = samples[4]
+            bestPatches[5] = samples[5]
 
-                sixPatches[l] = RecolorLeft[x][y]
+            #get color of 6 middel pixels
+            for l in range(0,len(bestPatches)):
+                x=bestPatches[l].row
+                y=bestPatches[l].col
+
+                bestPatches[l] = RecolorLeft[x][y]
 
             try:
-                mostFrequent=mode(sixPatches)
+                mostFrequent=mode(bestPatches)
                 RecolorRight[row][col] = mostFrequent
                
             except:
-                x=random.randint(0,len(sixPatches)-1)
-                tie=sixPatches[x]
+                x=random.randint(0,len(bestPatches)-1)
+                tie=bestPatches[x]
                 RecolorRight[row][col] = tie
 
-
-            #average_grayscale_value = float(float(sum(neighbor_values)) / float(len(neighbor_values)))
-            #six_similar_patches = findKClosestElements(left_patch_data, average_grayscale_value, 6)
-            """
-            for patch in six_similar_patches:
-               
-                rep_color = RecolorLeft[patch.row][patch.col]
-                patch.r_value = rep_color[0]
-                patch.g_value = rep_color[1]
-                patch.b_value = rep_color[2]
-                patch.rgb = (patch.r_value,patch.g_value,patch.b_value)
-
-            #Use Boyer-Moore Voting algo to find majority (Might tweak this to make it super majority)
-            
-            majority_color = findMajorityElement(six_similar_patches)
-            #print("M_color %d"-majority_color)
-            if not  majority_color == (-1,-1,-1):
-                RecolorRight[row][col] = majority_color.rgb
-            else:
-                #Assumption: 0th element of six_similar_patches = the most similar of the 6
-                most_similar_patch = findKClosestElements(six_similar_patches,average_grayscale_value,1)[0]
-                most_similar_patch_location = (most_similar_patch.row,most_similar_patch.col)
-                RecolorRight[row][col] = RecolorLeft[most_similar_patch_location[0]][most_similar_patch_location[1]]
-            """
             
     print("\n--FINISHED COLORING RIGHT HALF--\n")
     return RecolorRight
@@ -289,7 +243,7 @@ cv2.imshow('Right Colored - Old',training_image.right_c)
 cv2.waitKey(0)
 #representative_colors = train_model(training_image)
 
-# Sample Colors for training_image.png
+# Sample Colors for training_image.png: Accumulated by running k-means algorithm on our training image
 representative_colors = [(7.235440566268001, 4.158799121308275, 9.24460824993898), (73.20919616968587, 42.89522142305408, 13.874427956480055), (31.297164913342918, 18.522225081359267, 7.051370619844093), (194.67783309425366, 144.16915590808088, 155.61758501392288), (144.34301092067267, 98.40030035629513, 98.54573126174841)]
 
 #Sample Colors for scenery_image.png
